@@ -12,7 +12,6 @@ for more information.
 
 
 A high level summary of the production plan follows:
-——————————————————————————-
 
 - We will produce PhoSim e-image files.  
 - We will also produce flats in order to correct for vignetting.
