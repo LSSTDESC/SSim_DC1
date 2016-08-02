@@ -1,7 +1,7 @@
 # SSim_DC1_Roadmap
 Configuration, production and validation specifications for the DC1 Data Set.
 
-This repository holds LaTex files to docuement the DC1 production
+This repository holds LaTex files to document the DC1 production
 strategy and techniques.  It will likely eventually become a technical
 note.  If you are working on the DC1 production please feel free to
 work on the document and add yourself to the author list.
