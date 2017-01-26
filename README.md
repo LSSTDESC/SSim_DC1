@@ -1,4 +1,4 @@
-# DC1 Configuration, production, validation and tools for the DC1 Data Set.
+# Configuration, production, validation and tools for the DC1 Data Set.
 
 The repository holds all of the issues, tools and validations used for the DC1 production. It also holds LaTex files which document the DC1 production strategy and techniques.  There is a GitHub Issues list to track the work necessary to complete the production.  See the Issues and Milestones for more information.
 
