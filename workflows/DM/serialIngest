@@ -1,0 +1,4 @@
+# Make sure the output directory exists
+mkdir -p ${OUTPUT_DATA_DIR}
+# We are using PhosimImport instead of ingestImages.py since it is much faster
+java -jar /global/homes/t/tony_j/PhosimIngest.jar -c -i ${INPUT_DATA_DIR} -v -o ${OUTPUT_DATA_DIR} -t 64 -s

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pipeline xmlns="http://glast-ground.slac.stanford.edu/pipeline" 
+          xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" 
+          xs:schemaLocation="http://glast-ground.slac.stanford.edu/pipeline 
+          http://srs.slac.stanford.edu/Pipeline-II/schemas/2.1/pipeline.xsd">
+    <task name="DC1-DM" type="LSST" version="1.2">
+        <notation>Task for running DM level 2 processing for DESC DC1</notation>
+        <variables>
+            <var name="SITE">NERSC</var>
+            <var name="MAXCPU">${100000 / (SITE=="NERSC" ? 10 : 1)}</var>
+            <var name="MAXCPULONG">${1000000 / (SITE=="NERSC" ? 10 : 1)}</var>
+            <var name="SLAC_BATCH_OPTIONS">-R rhel60 -R bullet</var>
+            <var name="NERSC_BATCH_OPTIONS">-p dc1-dm | -L SCRATCH | -C haswell</var>
+            <var name="BATCH_OPTIONS">${SITE=="NERSC" ? NERSC_BATCH_OPTIONS : SLAC_BATCH_OPTIONS}</var>
+            <!-- Base directory where script files will be placed -->
+            <var name="SLAC_SCRIPT_LOCATION">/nfs/farm/g/lsst/u1/users/tonyj/dc1_workflow/DM</var>
+            <var name="NERSC_SCRIPT_LOCATION">/global/homes/d/desc/dc1_workflow/DM</var>
+            <var name="SCRIPT_LOCATION">${SITE=="NERSC" ? NERSC_SCRIPT_LOCATION : SLAC_SCRIPT_LOCATION}</var>
+            <!-- Default location from which to setup DM -->
+            <var name="SLAC_DM_DIR">${SLAC_SCRIPT_LOCATION}</var>
+            <var name="NERSC_DM_DIR">${NERSC_SCRIPT_LOCATION}</var>
+            <var name="DM_DIR">${SITE=="NERSC" ? NERSC_DM_DIR : SLAC_DM_DIR}</var>
+            <var name="DM_SETUP">setupStack-dc1.sh</var>
+            <!-- Base directory where imsim/phosim files will be placed -->
+            <var name="SLAC_INPUT_DATA_DIR">/nfs/farm/g/desc/dc1</var>
+            <var name="NERSC_INPUT_DATA_DIR">/global/projecta/projectdirs/lsst/production/DC1/DC1-imsim/full_focalplane_undithered/</var>
+            <var name="INPUT_DATA_DIR">${SITE=="NERSC" ? NERSC_INPUT_DATA_DIR : SLAC_INPUT_DATA_DIR}</var>
+            <!-- Base directory where work files will be placed -->
+            <var name="SLAC_OUTPUT_DATA_DIR">/nfs/farm/g/desc/dc1</var>
+            <var name="NERSC_OUTPUT_DATA_DIR">/global/cscratch1/sd/desc/DC1/DC1-imsim/full_focalplane_undithered/</var>
+            <var name="OUTPUT_DATA_DIR">${SITE=="NERSC" ? NERSC_OUTPUT_DATA_DIR : SLAC_OUTPUT_DATA_DIR}</var>
+            <!-- astrometry_net files -->
+            <var name="REF_CAT">${SCRIPT_LOCATION}/dc1_reference_catalog.txt</var>
+            <var name="SCRIPT_NAME">DC1Workflow.py</var>
+            <var name="BATCH_NAME">DC1Batch.sh</var>
+            <!-- The visit file controls which visits are processed -->
+            <var name="VISIT_FILE">dc1_visit.txt</var>
+            <var name="JOBSITE">${SITE=="NERSC" ? "CORIP" : "SLAC"}</var>
+        </variables>
+        <process name="serialIngest" site="${JOBSITE}">
+            <notation>Ingest the input data (output from phosim/imsim) serially</notation>
+            <job maxCPU="${MAXCPULONG}" batchOptions="${BATCH_OPTIONS}" executable="${SCRIPT_LOCATION}/${BATCH_NAME}"/>
+        </process>
+        <process name="ingestRefCat" site="${JOBSITE}">
+            <notation>Ingest the reference catalog</notation>
+            <job maxCPU="${MAXCPULONG}" batchOptions="${BATCH_OPTIONS}" executable="${SCRIPT_LOCATION}/${BATCH_NAME}"/>
+            <depends>
+                <after process="serialIngest"/>
+            </depends>
+        </process>
+        <process name="setupEimageVisits">
+            <notation>Decide how to parallelize the eImage processing</notation>
+            <script><![CDATA[ 
+          execfile("%s/%s" % (SLAC_SCRIPT_LOCATION, SCRIPT_NAME))
+          setupEimageVisits()
+      ]]>
+            </script>
+            <depends>
+                <after process="ingestRefCat"/>
+            </depends>
+            <createsSubtasks>
+                <subtask>processVisit</subtask>
+            </createsSubtasks>
+        </process>
+        <process name="makeDiscreteSkyMap" site="${JOBSITE}">
+            <notation>Ingest the input data (output from phosim) serially</notation>
+            <job maxCPU="${MAXCPULONG}" batchOptions="${BATCH_OPTIONS}" executable="${SCRIPT_LOCATION}/${BATCH_NAME}"/>
+            <depends>
+                <after process="processVisit.processEimage"/>
+            </depends>
+        </process>
+        <process name="setupFilters">
+            <notation>Decide how to parallelize the filters</notation>
+            <script><![CDATA[ 
+          execfile("%s/%s" % (SLAC_SCRIPT_LOCATION, SCRIPT_NAME))
+          setupFilters()
+      ]]>
+            </script>
+            <depends>
+                <after process="makeDiscreteSkyMap"/>
+            </depends>
+            <createsSubtasks>
+                <subtask>processFilter</subtask>
+            </createsSubtasks>
+        </process>
+        <process name="completeCoadd" site="${JOBSITE}">
+            <notation>Assemble complete coadd</notation>
+            <job maxCPU="${MAXCPULONG}" batchOptions="${BATCH_OPTIONS}" executable="${SCRIPT_LOCATION}/${BATCH_NAME}"/>
+            <depends>
+                <after process="processFilter.assembleCoadd"/>
+            </depends>
+        </process>
+        <process name="setupForcedPhotometryVisits">
+            <notation>Decide how to parallelize the visits</notation>
+            <script><![CDATA[ 
+          execfile("%s/%s" % (SLAC_SCRIPT_LOCATION, SCRIPT_NAME))
+          setupForcedPhotometryVisits()
+      ]]>
+            </script>
+            <depends>
+                <after process="completeCoadd"/>
+            </depends>
+            <createsSubtasks>
+                <subtask>processForcedPhotometry</subtask>
+            </createsSubtasks>
+        </process>   
+        <process name="wrapup" site="${JOBSITE}">
+            <notation>Generate plots</notation>
+            <job maxCPU="${MAXCPU}" batchOptions="${BATCH_OPTIONS}" executable="${SCRIPT_LOCATION}/${BATCH_NAME}"/>
+            <depends>
+                <after process="processForcedPhotometry.forcedPhotometry"/>
+            </depends>
+        </process>
+        <process name="report">
+            <notation>Report final status of job</notation>
+            <script><![CDATA[ 
+          execfile("%s/%s" % (SLAC_SCRIPT_LOCATION, SCRIPT_NAME))
+          report()
+      ]]>
+            </script>
+            <depends>
+                <after process="wrapup" status="DONE"/>
+            </depends>
+        </process>
+        <task name="processVisit" type="LSST">
+            <notation>Sub-task that runs per visit processing</notation>
+            <process name="processEimage" site="${JOBSITE}">
+                <notation>Initial processing of visits</notation>
+                <job maxCPU="${MAXCPU}" batchOptions="${BATCH_OPTIONS}" executable="${SCRIPT_LOCATION}/${BATCH_NAME}"/>
+            </process>   
+        </task>    
+        <task name="processFilter" type="LSST">
+            <notation>Sub-task that runs per filter processing</notation>
+            <process name="assembleCoadd" site="${JOBSITE}">
+                <notation>Assemble coadd</notation>
+                <job maxCPU="${MAXCPULONG}" batchOptions="${BATCH_OPTIONS}" executable="${SCRIPT_LOCATION}/${BATCH_NAME}"/>
+            </process>                
+        </task>         
+        <task name="processForcedPhotometry" type="LSST">
+            <notation>Sub-task that runs per visit processing</notation>
+            <process name="forcedPhotometry" site="${JOBSITE}">
+                <notation>Forced Photometry</notation>
+                <job maxCPU="${MAXCPU}" batchOptions="${BATCH_OPTIONS}" executable="${SCRIPT_LOCATION}/${BATCH_NAME}"/>
+            </process>
+        </task>
+    </task>
+</pipeline> 

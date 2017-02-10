@@ -1,0 +1,1 @@
+ingestReferenceCatalog.py ${OUTPUT_DATA_DIR} ${REF_CAT} --configfile $OBS_LSSTSIM_DIR/config/DC1_IngestRefConfig.py --output ${OUTPUT_DATA_DIR}

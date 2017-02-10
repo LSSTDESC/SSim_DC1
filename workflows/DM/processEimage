@@ -1,0 +1,1 @@
+processEimage.py ${OUTPUT_DATA_DIR} --id visit=${VISIT} raft=`echo $RAFT | sed 's|\(.\)\(.\)|\1,\2|'` --output ${OUTPUT_DATA_DIR} --doraise --clobber-config 

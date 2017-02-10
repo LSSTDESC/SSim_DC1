@@ -1,0 +1,2 @@
+makeDiscreteSkyMap.py ${OUTPUT_DATA_DIR} --id --output ${OUTPUT_DATA_DIR} --configfile $OBS_LSSTSIM_DIR/config/makeDiscreteSkyMap_deep.py --doraise --clobber-config
+
