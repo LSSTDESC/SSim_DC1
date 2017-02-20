@@ -3,6 +3,39 @@ import argparse
 import os
 import numpy as np
 
+from lsst.sims.catUtils.exampleCatalogDefinitions import PhoSimCatalogPoint
+from lsst.sims.catalogs.definitions import InstanceCatalog
+from lsst.sims.catalogs.decorators import cached
+
+
+class MaskedPhoSimCatalogPoint(PhoSimCatalogPoint):
+
+    min_mag = None
+
+    column_outputs = ['prefix', 'uniqueId', 'raPhoSim', 'decPhoSim', 'maskedMagNorm', 'sedFilepath',
+                      'redshift', 'shear1', 'shear2', 'kappa', 'raOffset', 'decOffset',
+                      'spatialmodel', 'internalExtinctionModel',
+                      'galacticExtinctionModel', 'galacticAv', 'galacticRv']
+
+    @cached
+    def get_maskedMagNorm(self):
+        raw_norm = self.column_by_name('phoSimMagNorm')
+        if self.min_mag is None:
+            return raw_norm
+        return np.where(raw_norm<self.min_mag, self.min_mag, raw_norm)
+
+
+class BrightStarCatalog(PhoSimCatalogPoint):
+
+    min_mag = None
+
+    column_outputs = ['uniqueId', 'phoSimMagNorm']
+
+    @cached
+    def get_isBright(self):
+        raw_norm = self.column_by_name('phoSimMagNorm')
+        return np.where(raw_norm<self.min_mag, raw_norm, None)
+
 
 if __name__ == "__main__":
 
@@ -19,6 +52,10 @@ if __name__ == "__main__":
     parser.add_argument('--dither', type=str,
                         default='True',
                         help='whether or not to apply dithering (true/false; default true)')
+    parser.add_argument('--min_mag', type=float, default=10.0,
+                        help='the minimum magintude for stars')
+    parser.add_argument('--fov', type=float, default=2.0,
+                        help='field of view radius in degrees')
     args = parser.parse_args()
 
     obshistid_list = args.id
@@ -35,7 +72,6 @@ if __name__ == "__main__":
 
     obs_generator = ObservationMetaDataGenerator(database=opsimdb, driver='sqlite')
 
-    from lsst.sims.catUtils.exampleCatalogDefinitions import PhoSimCatalogPoint
     from lsst.sims.catUtils.exampleCatalogDefinitions import PhoSimCatalogSersic2D
     from lsst.sims.catUtils.exampleCatalogDefinitions import PhoSimCatalogZPoint
     from lsst.sims.catUtils.exampleCatalogDefinitions import DefaultPhoSimHeaderMap
@@ -63,7 +99,7 @@ if __name__ == "__main__":
 
         obs_list = obs_generator.getObservationMetaData(obsHistID=obshistid,
                                                         boundType='circle',
-                                                        boundLength=2.0)
+                                                        boundLength=args.fov)
 
         obs = obs_list[0]
         if dither_switch:
@@ -82,7 +118,6 @@ if __name__ == "__main__":
         agn_name = os.path.join('agn_cat_%d.txt' % obshistid)
 
         cat = PhoSimCatalogPoint(star_db, obs_metadata=obs)
-
         cat.phoSimHeaderMap = phosim_header_map
         with open(cat_name, 'w') as output:
             cat.write_header(output)
@@ -90,8 +125,17 @@ if __name__ == "__main__":
             output.write('includeobj %s\n' % gal_name)
             output.write('includeobj %s\n' % agn_name)
 
-        cat.write_catalog(os.path.join(out_dir, star_name), write_header=False,
-                          chunk_size=100000)
+        star_cat = MaskedPhoSimCatalogPoint(star_db, obs_metadata=obs)
+        star_cat.phoSimHeaderMap = phosim_header_map
+        bright_cat = BrightStarCatalog(star_db, obs_metadata=obs, cannot_be_null=['isBright'])
+        star_cat.min_mag = args.min_mag
+        bright_cat.min_mag = args.min_mag
+
+        from lsst.sims.catalogs.definitions import parallelCatalogWriter
+        cat_dict = {}
+        cat_dict[os.path.join(out_dir, star_name)] = star_cat
+        cat_dict[os.path.join(out_dir, 'bright_stars_%d.txt' % obshistid)] = bright_cat
+        parallelCatalogWriter(cat_dict, chunk_size=100000, write_header=False)
 
         cat = PhoSimCatalogSersic2D(bulge_db, obs_metadata=obs)
         cat.write_catalog(os.path.join(out_dir, gal_name), write_header=False,
