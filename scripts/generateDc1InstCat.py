@@ -29,8 +29,6 @@ class BrightStarCatalog(PhoSimCatalogPoint):
 
     min_mag = None
 
-    column_outputs = ['uniqueId', 'phoSimMagNorm']
-
     @cached
     def get_isBright(self):
         raw_norm = self.column_by_name('phoSimMagNorm')
