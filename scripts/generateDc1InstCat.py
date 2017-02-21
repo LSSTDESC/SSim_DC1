@@ -111,9 +111,9 @@ if __name__ == "__main__":
             obs.OpsimMetaData['rotTelPos'] = obs.OpsimMetaData['ditheredRotTelPos']
 
         cat_name = os.path.join(out_dir,'phosim_cat_%d.txt' % obshistid)
-        star_name = os.path.join('star_cat_%d.txt' % obshistid)
-        gal_name = os.path.join('gal_cat_%d.txt' % obshistid)
-        agn_name = os.path.join('agn_cat_%d.txt' % obshistid)
+        star_name = 'star_cat_%d.txt' % obshistid
+        gal_name = 'gal_cat_%d.txt' % obshistid
+        agn_name = 'agn_cat_%d.txt' % obshistid
 
         cat = PhoSimCatalogPoint(star_db, obs_metadata=obs)
         cat.phoSimHeaderMap = phosim_header_map
