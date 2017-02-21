@@ -2,6 +2,7 @@ from __future__ import with_statement
 import argparse
 import os
 import numpy as np
+import gzip
 
 from lsst.sims.catUtils.exampleCatalogDefinitions import PhoSimCatalogPoint
 from lsst.sims.catalogs.definitions import InstanceCatalog
@@ -119,9 +120,9 @@ if __name__ == "__main__":
         cat.phoSimHeaderMap = phosim_header_map
         with open(cat_name, 'w') as output:
             cat.write_header(output)
-            output.write('includeobj %s\n' % star_name)
-            output.write('includeobj %s\n' % gal_name)
-            output.write('includeobj %s\n' % agn_name)
+            output.write('includeobj %s.gz\n' % star_name)
+            output.write('includeobj %s.gz\n' % gal_name)
+            output.write('includeobj %s.gz\n' % agn_name)
 
         star_cat = MaskedPhoSimCatalogPoint(star_db, obs_metadata=obs)
         star_cat.phoSimHeaderMap = phosim_header_map
@@ -145,3 +146,10 @@ if __name__ == "__main__":
         cat = PhoSimCatalogZPoint(agn_db, obs_metadata=obs)
         cat.write_catalog(os.path.join(out_dir, agn_name), write_header=False,
                           chunk_size=100000)
+
+        for orig_name in (star_name, gal_name, agn_name):
+            full_name = os.path.join(out_dir, orig_name)
+            with open(full_name, 'r') as input_file:
+                with gzip.open(full_name+'.gz', 'w') as output_file:
+                    output_file.writelines(input_file)
+            os.unlink(full_name)
