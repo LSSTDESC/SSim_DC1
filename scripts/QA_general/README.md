@@ -2,10 +2,10 @@
 
 The script `input_output_comp.py` reads an input PhoSim instance catalog through
 the option `--truth-table`. This catalog acts as a "truth table". Then we specify
-the path to the L2 catalog that we want to match with this truth table using the
-option `--input-catalog`, and the path to the calibrated exposure corresponding
-the that catalog with `--calexp`. Finally we pass the path to the magnitude truth
-table with `--mag-truth` (in a FITS table).
+the path to the catalog from the stack (it will be something like `ref*.fits`) 
+that we want to match with this truth table using the option `--input-catalog`, and
+the path to the calibrated exposure corresponding the that catalog with `--calexp`.
+Finally, we pass the path to the magnitude truth table with `--mag-truth` (in a FITS table).
 
 The script matches the PhoSim inputs and L2 outputs and produces some useful plots
 comparing the input and output a,b (semi-major and semi-minor axis of the ellipses
@@ -25,4 +25,4 @@ Finally it produces a plot showing the input objects (blue X), detected galaxies
 (cyan +), and detected stars (red +) in a 200 x 200 pixel cutout around a bright star
 and a faint object, `bright_star_example.png`, and `faint_example.png`, respectively.
 
- 
+### TODO: Add example at NERSC 
