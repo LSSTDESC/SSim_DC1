@@ -1,0 +1,20 @@
+dc1_bright_stars.txt
+--------------------
+dc1_bright_stars.txt is a catalog of all of the bright stars that were replaced
+with dimmer sources in the DC1 PhoSim images.  Because PhoSim takes a very long
+time to simulate bright sources, we replaced all stars with magnitude < 10
+(technically, with PhoSim normalizing magnitudes < 10) with magnitude = 10
+stars.  This catalog lists all of the stars that were replaced in this way.
+The columns of the catalog are
+
+uniqueId -- an integer uniquely identifying the star
+
+raJ2000 -- the mean (no propermotion) RA of the source in decimal degrees
+
+decJ2000 -- see above
+
+phoSimMagNorm -- the PhoSim normalizing magnitude (AB magnitude in a delta
+function bandpass at 500 nm)
+
+rmag...ymag -- the observed LSST magnitudes of the source (including extinction
+due to Milky Way dust).
