@@ -2,8 +2,6 @@
 ## note
 # The LSST Data Challenge 1: Simulating data for the next generation of photometric redshift surveys
 
-*Javier Sanchez and others*
-
 DC1 simulations technical note
 
 
