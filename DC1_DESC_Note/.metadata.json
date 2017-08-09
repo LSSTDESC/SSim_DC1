@@ -1,0 +1,12 @@
+{
+    "author": "Javier Sanchez",
+    "affiliation": "Department of Physics and Astronomy, University of California, Irvine, CA, USA",
+    "email": "francs1@uci.edu",
+    "title": "The LSST Data Challenge 1: Simulating data for the next generation of photometric redshift surveys",
+    "description": "DC1 simulations technical note",
+    "repo_name": "SSim_DC1",
+    "serial_number": "0000",
+    "short_title": "DC1 intro",
+    "folder_name": "note",
+    "default_format": "tex"
+}

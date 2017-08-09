@@ -1,0 +1,60 @@
+# ======================================================================
+# authors.csv
+#
+# While we wait for the LSST DESC publications system to generate files
+# like this from its database, we'll need to edit authors.csv by hand.
+# Below are some example entries.
+#
+# Notes:
+#   - If someone has two affiliations, they get two rows, and the last
+#     row is is used for their contribution.
+#   - Try to make your one-sentence contribution statement as
+#     informative as possible, so that it's clear who did what.
+#   - The contribution statement is a _summary of your impact on the
+#     project_, not a _timecard_. So, if you spent 90% of your time
+#     debugging, but 10% of your time designing and implementing the
+#     framework that then needed debugging, your statement should
+#     emphasize the design and implementation rather than the debugging.
+#   - BUG: mkauthlist cannot deal with empty rows, so please avoid them!
+#   - BUG: contributions are re-formatted by mkauthlist into Title case,
+#     removing all other capitalizations. Sorry about this!
+#
+# Example rows for you to adapt:
+#
+# Drlica-Wagner,Alex,A.~Drlica-Wagner,Contact,"Fermi National Accelerator Laboratory, P. O. Box 500, Batavia, IL 60510, USA","Developed algorithms for switching between document styles and generating author lists, implemented and tested software.",kadrlica@fnal.gov
+# Marshall,Phil,P.~Marshall,Contributor,"SLAC National Accelerator Laboratory, Menlo Park, CA 94025, USA","Initiated and led project.",dr.phil.marshall@gmail.com
+# Marshall,Phil,P.~Marshall,Contributor,"Kavli Institute for Particle Astrophysics \& Cosmology, P. O. Box 2450, Stanford University, Stanford, CA 94305, USA","Initiated and led project, designed templates, tested system.",dr.phil.marshall@gmail.com
+# Digel,Seth,S.~Digel,Builder,"SLAC National Accelerator Laboratory, Menlo Park, CA 94025, USA","Advised on LSST DESC publication system requirements.",digel@stanford.edu
+# Digel,Seth,S.~Digel,Builder,"Kavli Institute for Particle Astrophysics \& Cosmology, P. O. Box 2450, Stanford University, Stanford, CA 94305, USA","Advised on LSST DESC publication system requirements.",digel@stanford.edu
+#
+# ======================================================================
+LastName,FirstName,Authorname,AuthorType,Affiliation,Contribution,Email
+"AlSayyad","Yusra","Yusra AlSayyad",Contact,"Affiliation","Contribution","email"
+"Awan","Humna","Humna Awan",Contact,"Affiliation","Contribution","email"
+"Burke","Colin","Colin Burke",Contact,"Affiliation","Contribution","email"
+"Cheng","Jun","Jun Cheng",Contact,"Affiliation","Contribution","email"
+"Chiang","James C.","James C. Chiang",Contact,"Affiliation","Contribution","email"
+"Daniel","Scott","Scott Daniel",Contact,"Affiliation","Contribution","email"
+"Digel","Seth","Seth Digel",Contact,"SLAC National Accelerator Laboratory, Menlo Park, CA 94025, USA","Contribution", "digel@stanford.edu"
+"Dubois","Richard","Richard Dubois",Contact,"Affiliation","Contribution","email"
+"Gawiser","Eric","Eric Gawiser",Contact,"Affiliation","Contribution","email"
+"Glanzman","Tom","Tom Glanzman",Contact,"Affiliation","Contribution","email"
+"Jarvis", "Mike","Mike Jarvis",Contact,"Affiliation","Contribution","email"
+"Johnson","Tony","Tony Johnson",Contact,"Affiliation","Contribution","email"
+"Kelly","Heather","Heather Kelly",Contact,"Affiliation","Contribution","email"
+"Kirkby", "David", "David Kirkby",Contact,"Deparment of Physics and Astronomy, University of California, Irvine, CA, USA","Contribution", "dkirkby@uci.edu"
+"Krughoff","Simon","Simon Krughoff",Contact,"Affiliation","Contribution","email"
+"Lupton","Robert","Robert Lupton",Contact,"Affiliation","Contribution","email"
+"Mandelbaum","Rachel","Rachel Mandelbaum",Contact,"Affiliation","Contribution","email"
+"Marshall","Phil","P.~Marshall",Contact,"Kavli Institute for Particle Astrophysics \& Cosmology, P. O. Box 2450, Stanford University, Stanford, CA 94305, USA","Contribution","dr.phil.marshall@gmail.com"
+"Mustafa","Mustafa","Mustafa Mustafa",Contact,"Affiliation","Contribution","email"
+"Peng","En-Hsin","En-Hsin Peng",Contact,"Affiliation","Contribution","email"
+"Peterson","John","John Peterson",Contact,"Affiliation","Contribution","email"
+"Price","Paul","Paul Price",Contact,"Affiliation","Contribution","email"
+"Sanchez","Javier","Javier Sanchez",Contact,"Department of Physics and Astronomy, University of California, Irvine, CA, USA","Validation and analysis, started note","francs1@uci.edu"
+"Sembroski","Glenn","Glenn Sembroski",Contact,"Affiliation","Contribution","email"
+"Slosar", "Anze", "Anze Slosar",Contact,"Affiliation","Contribution","email"
+"Van Klaveren","Brian","Brian Van Klaveren",Contact,"Affiliation","Contribution","email"
+"Walter","Chris, W.","Chris W. Walter",Contact,"Affiliation","Contribution","email"
+"Wiesener","Matt","Matt Wiesener",Contact,"Affiliation","Contribution","email"
+"Xin","Bo","Bo Xin",Contact,"Affiliation","Contribution","email"
