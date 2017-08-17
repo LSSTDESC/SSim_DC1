@@ -70,11 +70,11 @@ the products of this process for future studies. These productsencompass single-
 (i.e., flattened, background removed, etc) and source catalogs that add up to $\sim 225 TB$. They are the result of three
 different simulations: imSim dithered, imSim undithered, and PhoSim that will be introduced later.
 
-This paper is structured as follows: In Section \secref{inputs} we describe the input catalog used for our simulations,
-in Section \secref{image_generation_pipeline} we introduce two different approaches to generate simulated images to
-resemble LSST data. In Section \secref{image_processing_pipeline} we present the procedure and tools used to perform
-calibration and source extraction on the simulated images. In Section \secref{catalogs} we describe the output catalogs
-produced by our pipelines. Finally, in Section \secref{conclusions} we present some concluding remarks.
+This paper is structured as follows: In \secref{inputs} we describe the input catalog used for our simulations,
+in \secref{image_generation_pipeline} we introduce two different approaches to generate simulated images to
+resemble LSST data. In \secref{image_processing_pipeline} we present the procedure and tools used to perform
+calibration and source extraction on the simulated images. In \secref{catalogs} we describe the output catalogs
+produced by our pipelines. Finally, in \secref{conclusions} we present some concluding remarks.
 
 % ----------------------------------------------------------------------
 \section{Image generation: inputs}
@@ -146,32 +146,95 @@ comparing to the input \textit{truth} catalog; and an \textit{internal} check co
 
 As we have already mentioned, one of the big advantages of using simulations is that we have access to the \textit{true}
 underlying information. We will use this information to check the precision of the astrometric measurements in single exposures
-and co-adds. In both cases we will use a \texttt{KDTree}~\citep{scikit-learn} to retrieve those objects in the input catalog
-that are in a radius of 0.2 arc-seconds of those detected in the output catalog and select the match that is closest in
-magnitude. We only consider sources which have a magnitude difference smaller than 0.05 magnitudes.
+and co-adds. For these and the photometry studies we will select stellar objects. In order to do so, we use the classifier
+included in the LSST software stack\footnote{To see more details about the classifier refer to section 4.9.10 at
+~\citep{2017arXiv170506766B}} and choose objects with \texttt{base\_ClassificationExtendedness\_value==0}.
+We also require that \texttt{deblend\_nChild==0} to ensure that the objects are primary sources. We match these objects to the
+stellar source in the input catalog. In both cases we will use a \texttt{KDTree}~\citep{scikit-learn} to retrieve those objects
+in the input catalog that are in a radius of 0.2 arc-seconds (one pixel) of those detected in the output catalog and select the
+match that is closest in magnitude. We only consider sources which have a magnitude difference smaller than 0.02 magnitudes.
 
-We selected a representative single visit and calculated the difference between the measured and the input positions.
-These are represented in Figure~\figref{astrometry_a}. We can see that both RA and Dec distributions are compatible with each
-other, meaning that there are no anisotropies in the detection, as expected from the inputs. However, we find that the distributions
-are assymetric and that the median is not zero. This effect is even more noticeable when we accumulate all of the visits and
-it is present in the dithered and undithered runs.
+We selected a representative single visit (visit number $270675$ for the imSim dithered run) and calculated the difference
+between the measured and the input positions. These are represented in \figref{astrometry_a}. We can see that both RA and Dec
+distributions are compatible with each other, meaning that there are no anisotropies in the detection, as expected from the inputs.
+However, we find that the distributions are assymetric and that the median is not zero. This effect is even more noticeable when we
+accumulate visits as in \figref{astrometry_b}, where we accumulated the results for 50 randomly selected visits of the imSim dithered
+run. This effect is also present in the dithered and undithered imSim runs and in the PhoSim run. We also checked the dependence the
+mean astrometric residual with the magnitude of the objects as shown in \figref{astrometry_b} where a mild bias for the brightest
+objects can be seen. This bias is smaller than 15 mas and it will not affect the results of the two point clustering studies that
+were the main focus of this simulations. \textcolor{red}{Check origin of these biases: Some pepole suggest proper motion: Why then
+present in single visits? I think it's the way we simulate the saturation (see the trend with magnitude).}
 
 \begin{figure}
   \centering
   \includegraphics[width=0.45\textwidth]{astrometry_single_visit_imsim_dithered_hist}
   \includegraphics[width=0.45\textwidth]{astrometry_single_visit_imsim_dithered_hist2d}
-  \caption{Distribution of the difference $\Delta=X_{measured}-X_{input}$ in RA (blue) and Dec (green) coordinates. We cannot
+  \caption{Left: Distribution of the difference $\Delta=X_{measured}-X_{input}$ in RA (blue) and Dec (green) coordinates. We cannot
   appreciate any differences between these, however we see that there is median is not at zero $\Delta_{median} \approx -2$ mas.
-  The histograms are normalized such that the total sum of the counts is equal to one. We selected one random representative
-  exposure (visit number $270675$ for the \textsc{imSim} dithered run).}
+  The histograms are normalized such that the total sum of the counts is equal to one. Right: 2D histogram
+  showing the bivariate distribution of the difference in RA (horizontal axis) and Dec (vertical axis). We selected one random representative
+  exposure (visit number $270675$ for the imSim dithered run). The effect is similar for the undithered imSim run and for the PhoSim run.}
   \label{fig:astrometry_a}
 \end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.3\textwidth]{astrometry_imsim_dithered_50visits}
+  \includegraphics[width=0.3\textwidth]{astrometry_imsim_dithered_50visits_hist2d}
+  \includegraphics[width=0.3\textwidth]{astrometry_vs_mag_imsim_50_visits}
+  \caption{Left: Distribution of the difference $\Delta=X_{measured}-X_{input}$ in RA (blue) and Dec (green) coordinates as in
+  \figref{astrometry_a} but accumulating the results for 50 randomly selected visits from the imSim dithered run. Middle: 2D histogram
+  showing the bivariate distribution of the difference in RA (horizontal axis) and Dec (vertical axis). Right: Mean astrometric residual
+  as a function of magnitude for RA (blue) and Dec (green). These distributions are similar for the undithered imSim run and for the PhoSim run.}
+  \label{fig:astrometry_b}
+\end{figure}
+
+We also wanted to check if there is a preferred orientation for the differences between the input and output position in a single visit. Using
+the same visit as before we show the astrometric residuals in \figref{astrometry_c}. In this Figure we can see that the astrometric
+residuals do not show any noticeable structure and appear to be mostly random.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.7\textwidth]{astrometry_imsim_dithered_interp}
+  \caption{Astrometic residuals measured in visit $270675$ from the imSim dithered run. The light blue squares represent the CCD chips in
+  the LSST focal plane. The base of the arrow is on the input matched object. The arrows have been re-scaled 10,000 for visualization purposes.}
+  \label{fig:astrometry_c}
+\end{figure}
+
+
 \subsubsection{Internal checks}
 \label{sec:internal_astrometry}
 
-For the internal checks we select two
+For the internal checks we select different overlapping visits and estimate the astrometric residuals between them.
+
 \subsection{Photometry checks}
 \label{sec:photometry_checks}
+
+As in previous sections we are going to perform two different tests to test the quality of our simulations; first we are going to
+compare our output catalogs to the inputs, and second we are going to check the consistency between different visits for the same objects.
+
+\subsubsection{External checks}
+\label{sec:external_photometry}
+
+For the external checks we use again the same 50 randomly selected visits as we did in the previous section to check the astrometric residuals.
+To study the photometric residuals we change slightly the matching strategy from previous sections. In this case we eliminate the threshold
+in magnitude difference so, we just look for the input source that is closest in magnitude in a 0.2 arc-seconds radius around each detected
+source. In \figref{photometry_a} we can see the distribution of the photometric residuals. We see that this distribution gets wider as we go
+fainter (as expected) and that the 0.02 magnitude selection cut was a good proxy to ensure that we account for most sources properly matched.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.45\textwidth]{photometry_imsim_dithered_50visits_hist}
+  \includegraphics[width=0.45\textwidth]{photometry_imsim_dithered_50visits}
+  \caption{Left: Distribution of magnitude difference between the input and output catalogs.
+  Right: Difference magnitude between input and output catalogs as a function of the measured magnitude. We considered 50 visits
+  randomly selected from the imSim dithered run. We find similar results for the imSim undithered run and for the PhoSim run.}
+  \label{fig:photometry_a}
+\end{figure}
+
+\subsubsection{Internal checks}
+\label{sec:internal_photometry}
+
 
 \subsection{PSF checks}
 \label{sec:psf_checks}
