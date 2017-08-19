@@ -161,8 +161,9 @@ However, we find that the distributions are assymetric and that the median is no
 accumulate visits as in \figref{astrometry_b}, where we accumulated the results for 50 randomly selected visits of the imSim dithered
 run. This effect is also present in the dithered and undithered imSim runs and in the PhoSim run. We also checked the dependence the
 mean astrometric residual with the magnitude of the objects as shown in \figref{astrometry_b} where a mild bias for the brightest
-objects can be seen. This bias is smaller than 15 mas and it will not affect the results of the two point clustering studies that
-were the main focus of this simulations. \textcolor{red}{Check origin of these biases: Some pepole suggest proper motion: Why then
+objects can be seen. This bias is smaller than 15 mas, much smaller than the resolution of the input N-body simulation. This means
+that the two point clustering statistics will not be affected by this bias.
+\textcolor{red}{Check origin of these biases: Some pepole suggest proper motion: Why then
 present in single visits? I think it's the way we simulate the saturation (see the trend with magnitude).}
 
 \begin{figure}
@@ -205,7 +206,34 @@ residuals do not show any noticeable structure and appear to be mostly random.
 \subsubsection{Internal checks}
 \label{sec:internal_astrometry}
 
-For the internal checks we select different overlapping visits and estimate the astrometric residuals between them.
+We also wanted to check the internal consistency of the astrometric solutions between different exposures. To do that we selected a small
+region of the co-added area, which we will refer to as \textit{patch} and compared the positions of the objects detected in the co-add
+image with the positions of objects detected in individual exposures that overlap with that patch.
+
+In particular, we randomly chose 10 catalogs from individual exposures and looked for objects that fulfilled the following criteria:
+\begin{itemize}
+  \item \texttt{deblend\_nChild==0}, this means that the object has been completely deblended (it is a primary match).
+  \item \texttt{base\_PixelFlags\_flag\_edge==0}, which means that the object is not close to an edge.
+  \item \texttt{base\_PixelFlags\_flag\_interpolatedCenter==0}, the object does not have any interpolated pixels in its center.
+\end{itemize}
+Note that in this case we are not requiring the objects to be clasiffied as stars (we are omitting the cut in
+\texttt{base\_ClassificationExtendedness\_value}) but we are adding some cuts to ensure that the objects were properly measured. Once
+we perform our selection, the next step is to match the objects in the different exposures. To do so we use the matching algorithm
+included in the LSST software stack\textcolor{red}{Reference?} and calculate the mean of the difference between the position of each source
+in the co-add, $X_{coadd,i}$ and the position of the matched object in each of the exposures where it has been detected, $X_{visit_{j},i}$
+for $j \in [1,10]$, i.e,
+\begin{equation}
+  \Delta = \langle X_{coadd,i} - X_{visit_{j},i} \rangle
+\end{equation}
+we only consider sources that have been detected in at least 5 exposures. The resulting distribution is shown in \figref{astrometry_internal}
+where we see that is noticeably narrower than those shown in \figref{astrometry_a} and \figref{astrometry_b}.
+\begin{figure}
+  \centering
+  \includegraphics[width=0.45\textwidth]{astrometry_internal_10visits_imsim_undithered}
+  \caption{Distribution of the mean difference in position (RA:blue, Dec:green) between the coadd and the different individual exposures
+  where each source has been detected.}
+  \label{fig:astrometry_internal}
+\end{figure}
 
 \subsection{Photometry checks}
 \label{sec:photometry_checks}
