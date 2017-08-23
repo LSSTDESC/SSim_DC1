@@ -124,11 +124,14 @@ products~\citep{2015arXiv151207914J}.
 After being processed, the catalogs are accessible by DESC collaborators andstored at NERSC. We generate pandas
 dataframes and three different databases for each one of the total coadd catalogs in order to be accessed by the
 collaborators and perform their own analyses. These catalogs contain 10.6 million objects covering an area
-of $\sim$ 43 deg$^{2}$.
+of $\sim$ 43 deg$^{2}$. \textcolor{red}{More description of the catalog.}
 
 In order to check the level of realism and the accuracy of the processed catalogs we perform several quality assurance tests.
 We focus on three different areas that can induce a systematic effect in the weak lensing and clustering observables:
 astrometry, photometry and PSF.
+
+
+\textcolor{red}{Add depth results and comparison with expected depth and plots with the object density.}
 
 \subsection{Astrometry checks}
 \label{sec:astrometry_checks}
@@ -146,13 +149,14 @@ comparing to the input \textit{truth} catalog; and an \textit{internal} check co
 
 As we have already mentioned, one of the big advantages of using simulations is that we have access to the \textit{true}
 underlying information. We will use this information to check the precision of the astrometric measurements in single exposures
-and co-adds. For these and the photometry studies we will select stellar objects. In order to do so, we use the classifier
+and co-adds. For these studies we will select stellar objects. In order to do so, we use the classifier
 included in the LSST software stack\footnote{To see more details about the classifier refer to section 4.9.10 at
 ~\citep{2017arXiv170506766B}} and choose objects with \texttt{base\_ClassificationExtendedness\_value==0}.
-We also require that \texttt{deblend\_nChild==0} to ensure that the objects are primary sources. We match these objects to the
-stellar source in the input catalog. In both cases we will use a \texttt{KDTree}~\citep{scikit-learn} to retrieve those objects
-in the input catalog that are in a radius of 0.2 arc-seconds (one pixel) of those detected in the output catalog and select the
-match that is closest in magnitude. We only consider sources which have a magnitude difference smaller than 0.02 magnitudes.
+We also require that \texttt{deblend\_nChild==0} to ensure that the objects are completely deblended, i.e., they are primary
+sources. We match these objects to the stellar sources in the input catalog. In both cases we will use a
+\texttt{KDTree}~\citep{scikit-learn} to retrieve those objects in the input catalog that are in a radius of 0.2 arc-seconds
+(one pixel) of those detected in the output catalog and select the match that is closest in magnitude. We only consider sources
+which have a magnitude difference smaller than 0.02 magnitudes.
 
 We selected a representative single visit (visit number $270675$ for the imSim dithered run) and calculated the difference
 between the measured and the input positions. These are represented in \figref{astrometry_a}. We can see that both RA and Dec
@@ -206,8 +210,8 @@ residuals do not show any noticeable structure and appear to be mostly random.
 \subsubsection{Internal checks}
 \label{sec:internal_astrometry}
 
-We also wanted to check the internal consistency of the astrometric solutions between different exposures. To do that we selected a small
-region of the co-added area, which we will refer to as \textit{patch} and compared the positions of the objects detected in the co-add
+Another important test is to ensure the internal consistency of the astrometric solutions between different exposures. To do that we selected
+a small region of the co-added area, which we will refer to as \textit{patch} and compared the positions of the objects detected in the co-add
 image with the positions of objects detected in individual exposures that overlap with that patch.
 
 In particular, we randomly chose 10 catalogs from individual exposures and looked for objects that fulfilled the following criteria:
@@ -216,17 +220,21 @@ In particular, we randomly chose 10 catalogs from individual exposures and looke
   \item \texttt{base\_PixelFlags\_flag\_edge==0}, which means that the object is not close to an edge.
   \item \texttt{base\_PixelFlags\_flag\_interpolatedCenter==0}, the object does not have any interpolated pixels in its center.
 \end{itemize}
+
 Note that in this case we are not requiring the objects to be clasiffied as stars (we are omitting the cut in
 \texttt{base\_ClassificationExtendedness\_value}) but we are adding some cuts to ensure that the objects were properly measured. Once
 we perform our selection, the next step is to match the objects in the different exposures. To do so we use the matching algorithm
 included in the LSST software stack\textcolor{red}{Reference?} and calculate the mean of the difference between the position of each source
 in the co-add, $X_{coadd,i}$ and the position of the matched object in each of the exposures where it has been detected, $X_{visit_{j},i}$
 for $j \in [1,10]$, i.e,
+
 \begin{equation}
   \Delta = \langle X_{coadd,i} - X_{visit_{j},i} \rangle
 \end{equation}
 we only consider sources that have been detected in at least 5 exposures. The resulting distribution is shown in \figref{astrometry_internal}
-where we see that is noticeably narrower than those shown in \figref{astrometry_a} and \figref{astrometry_b}.
+where we see that is noticeably narrower than those shown in \figref{astrometry_a} and \figref{astrometry_b} and no apparent bias is found showing
+that the processing is consistent.
+
 \begin{figure}
   \centering
   \includegraphics[width=0.45\textwidth]{astrometry_internal_10visits_imsim_undithered}
@@ -238,13 +246,15 @@ where we see that is noticeably narrower than those shown in \figref{astrometry_
 \subsection{Photometry checks}
 \label{sec:photometry_checks}
 
-As in previous sections we are going to perform two different tests to test the quality of our simulations; first we are going to
+As we did in previous sections we are going to perform two different tests to test the quality of our simulations: first we are going to
 compare our output catalogs to the inputs, and second we are going to check the consistency between different visits for the same objects.
 
 \subsubsection{External checks}
 \label{sec:external_photometry}
 
-For the external checks we use again the same 50 randomly selected visits as we did in the previous section to check the astrometric residuals.
+We want to analyze the accuracy of the magnitude measurement comparing the input catalog with the output image. This process not only checks
+the accuracy of the measurement pipeline but also, it tests the quality and level of realism of the image generation pipeline.
+For these external checks we use again the same 50 randomly selected visits as we did in the previous section to check the astrometric residuals.
 To study the photometric residuals we change slightly the matching strategy from previous sections. In this case we eliminate the threshold
 in magnitude difference so, we just look for the input source that is closest in magnitude in a 0.2 arc-seconds radius around each detected
 source. In \figref{photometry_a} we can see the distribution of the photometric residuals. We see that this distribution gets wider as we go
@@ -263,10 +273,30 @@ fainter (as expected) and that the 0.02 magnitude selection cut was a good proxy
 \subsubsection{Internal checks}
 \label{sec:internal_photometry}
 
+We also checked the consistency of the photometry between different exposures. Using the same approach and sample presented in
+\secref{internal_astrometry} we compared the mean difference between the coadded source and 10 random single-visit images. In
+principle, we would expect that some objects will show differences between different epochs due to their intrinsic variability, however,
+these effects are not found in the inputs of the simulation for any of the objects, thus, the differences between different epochs will come mainly
+from statistical fluctuations and different observing conditions. The results from these checks can be seen in \figref{internal_photometry_a}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.45\textwidth]{photometry_internal_10visits_imsim_undithered}
+  \caption{Distribution of the mean difference in magnitude between the coadd and the different individual exposures
+  where each source has been detected. The mean of the distribution is consistent with zero.}
+  \label{fig:internal_photometry_a}
+\end{figure}
+
+In this Figure we can see that the mean of the distribution is compatible with zero and that most sources have a magnitude difference lower
+than 25 mmag given the narrow peak. However we can appreciate the presence of long tails probably due to blends and mismatching or artifacts.
 
 \subsection{PSF checks}
 \label{sec:psf_checks}
 
+In order to ensure the accuracy of shape measurements a robust and accurate estimation of the PSF is required. In the case of imSim, we have
+a perfectly known input PSF that only depends on the airmass at the time of observation. We can check if the measurement pipeline can reconstruct
+the PSF and at which level of precision. To do that, we select 50 randoms visits, retrieve the measured PSF using the pipeline, and compare this
+to the input model given the observing conditions and compute the residual.
 % ----------------------------------------------------------------------
 
 \section{Conclusions}
