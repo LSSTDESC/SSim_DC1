@@ -80,8 +80,8 @@ tar : main
 
 authlist :
 	#pip install --upgrade mkauthlist
-	mkauthlist -j ${style} -f -c "LSST Dark Energy Science Collaboration" \
-		--cntrb contributions.tex authors.csv authors.tex
+	#mkauthlist -j ${style} -f -c "LSST Dark Energy Science Collaboration" \
+	#	--cntrb contributions.tex authors.csv authors.tex
 
 # http://stackoverflow.com/q/8028314/
 TARGETS=apj apjl prd prl mnras tex aastex61 emulateapj
