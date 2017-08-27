@@ -80,7 +80,7 @@ produced by our pipelines. Finally, in \secref{conclusions} we present some conc
 \section{Image generation: inputs}
 \label{sec:inputs}
 
-\textcolor{red}{Describe CatSim inputs and dithering}
+\textcolor{red}{Describe CatSim inputs and dithering, say what kind of sources there are.}
 
 \section{Image generation: pipeline}
 \label{sec:image_generation_pipeline}
@@ -92,17 +92,42 @@ generation~\citep{2016MNRAS.457..786S,2016ApJ...817...25B}. In our case, we use 
 we use modeling of the input sources using \textsc{GalSim}~\citep{2015A&C....10..121R}. The other approach consists in
 running a full photon-shooting simulation using \textsc{PhoSim}~\citep{2015ApJS..218...14P}. The former has a big speed
 advantage but the latter fully traces each photon coming from the sources through the atmosphere and the instrument,
- increasing the level of realism. These two approaches allow us to focus on different systematic effects and science cases.
+increasing the level of realism. These two approaches allow us to focus on different systematic effects and science cases.
 
 \subsection{The imSim pipeline}
 \label{sec:imsim_pipeline}
 
-\textcolor{red}{Describe imSim}
+The imSim pipeline follows the path of the fast image simulations in refs.~\citep{2016MNRAS.457..786S,2016ApJ...817...25B}.
+imSim uses \textsc{GalSim}~\citep{2015A&C....10..121R} to generate images that resemble LSST individual visits. Instead of the
+planned two 15 seconds exposures planned~\citep{2008arXiv0805.2366I} we generate a single 30 seconds image to speed up the process.
+We simulate each CCD of the focal plane individually but there are no instrumental effects nor variability in the optical model
+across the focal plane except for the sky. We used an ESO sky model and the sky brightness values come from
+OpSim~\textcolor{red}{reference?}\footnote{We used the values at OpSim's run \texttt{minion\_1016}} and we add the corresponding
+noise using \textsc{GalSim}. The PSF model that we use is a Gaussian for the system with a FWHM that depends on the airmass
+\footnote{From LSST-20160 eqn. (4.1)} plus a Kolmogorov profile to model the atmosphere that is airmass dependent as well
+\footnote{From LSST-20160 eqn. (4.2)}. The airmass model is taken from~\citep{1991PASP..103.1033K};
+\begin{equation}
+X = (1 - 0.96\sin{Z})^{-0.5},
+\end{equation}
+where $X$ is the airmass, and $Z$ the angular distance to the zenith.
+
+In this simulation we can find three different types of objects: Stars which are modeled as a very narrow Gaussian profile
+with $\sigma=10^{-8}$\textcolor{red}{Check this!}; galaxies, which are modeled as S\'{e}rsic profiles~\citep{1963BAAA....6...41S} (bulge plus disk) using
+the parameters given by CatSim; and AGNs that are also modeled as very narrow Gaussian profiles. In this version of the catalog we decided
+to not include variability in AGNs to simplify the analysis. The zeropoints are computed using the model presented at~\citep{2008arXiv0805.2366I} and the
+throughputs at \url{https://github.com/lsst/throughputs}. We clip the objects at magnitude 10 to simulate saturation.
+
+The final products of this pipeline are FITS images with information about the observing conditions as expected by the LSST software stack. We generated
+$XXXXX$ images in total. The typical time to simulate each CCD is $YYYY$ seconds.
+\textcolor{red}{Add typical production times and number of images}
+
+
 % ----------------------------------------------------------------------
 
 \subsection{The PhoSim pipeline}
 \label{sec:phosim_pipeline}
 
+The PhoSim pipeline is a complementary approach where we use the photon-shooting software \textsc{PhoSim} to create simulated images.
 \textcolor{red}{Describe PhoSim}
 % ----------------------------------------------------------------------
 
@@ -115,7 +140,7 @@ source high-performance data processing and analysis system intended for use in 
 the reduction, detection, deblending and measurement on individual visits and coadds producing the level 2 data
 products~\citep{2015arXiv151207914J}.
 
-\textcolor{red}{Say something about data size, times, configuration, etc}
+\textcolor{red}{Say something about data size, times, configuration, define patch, tract, show sky maps?}
 % ----------------------------------------------------------------------
 
 \section{Output catalogs}
@@ -124,9 +149,51 @@ products~\citep{2015arXiv151207914J}.
 After being processed, the catalogs are accessible by DESC collaborators andstored at NERSC. We generate pandas
 dataframes and three different databases for each one of the total coadd catalogs in order to be accessed by the
 collaborators and perform their own analyses. These catalogs contain 10.6 million objects covering an area
-of $\sim$ 43 deg$^{2}$. \textcolor{red}{More description of the catalog.}
+of $\sim$ 43 deg$^{2}$. The catalogs include information about position, size, shape and magnitude for every object.
+They include several flags that give information about the presence of interpolated/saturated pixels in the objects
+or whether these objects are close to the edge of a CCD or not.
 
 In order to check the level of realism and the accuracy of the processed catalogs we perform several quality assurance tests.
+First we checked that the per visit depth matched the predicted values. The results of these tests can be seen in
+\figref{depth_check_a}.
+
+\begin{figure}
+  \centering
+  %\includegraphics[width=0.45\textwidth]{astrometry_single_visit_imsim_dithered_hist}
+  %\includegraphics[width=0.45\textwidth]{astrometry_single_visit_imsim_dithered_hist2d}
+  \caption{Check the per-visit depth.}
+  \label{fig:depth_check_a}
+\end{figure}
+
+After this we decided to check the total depth of the coadds and its variation across the footprint. In order to do so we built
+a HEALPix~\citep{2005ApJ...622..759G} map with $N_{side}=2048$ where the value in each pixel is the magnitude of the dimmest star
+detected with $SNR \geq 5$. This is shown in \figref{depth_check_b} where we can see that the dithering strategy is effective and
+yields a high uniformity across the footprint, especially compared with the undithered run where we can see deeper fields
+in the overlap of the pointings.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.3\textwidth]{depth_map_dithered}
+  \includegraphics[width=0.3\textwidth]{depth_map_undithered}
+  \includegraphics[width=0.3\textwidth]{5_sigma_depth_hist_imsim_dithered}
+  \caption{Depth variation as a function of position in the footprint for the imSim dithered run (left) and imSim undithered run
+  (center). The color scale shows the maximum PSF magnitude in each HEALPix pixel for a star detected with $SNR \geq 5$.
+  We also represent the histogram showing the fraction of the area for each depth (right) for the dithered (blue) and
+  undithered (green) runs. We can see that the dithering strategy results into a much uniform footprint.}
+  \label{fig:depth_check_b}
+\end{figure}
+
+We also checked the density variation across the footprint as shown in \figref{fig:density_footprint}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.45\textwidth]{density_map_dithered}
+  \includegraphics[width=0.45\textwidth]{density_map_undithered}
+  \caption{Variation of the object density across the footprint for the imSim dithered run (left) and imSim undithered run
+  (right). The color scale shows the density in units of arcmin$^{-2}$. \textcolor{red}{take out the plot's title.}}
+  \label{fig:density_footprint}
+\end{figure}
+
 We focus on three different areas that can induce a systematic effect in the weak lensing and clustering observables:
 astrometry, photometry and PSF.
 
@@ -302,7 +369,15 @@ to the input model given the observing conditions and compute the residual.
 \section{Conclusions}
 \label{sec:conclusions}
 
+In this paper we presented the methodology followed to produce simulated images that try to resemble LSST 10-year exposures. We use two different
+approaches, one based on modeling using \textsc{GalSim} and one based on photon shooting using \textsc{PhoSim}. These two approaches are complementary
+since they include different effects and also they allow us to cross-check our simulations. These images are key to investigate
+the impact of systematic uncertainties in different science probes using LSST images. These images also allow us to test the image reduction and
+prepare and test analysis software. This effort represents a fundamental step towards the success of LSST. We performed several tests to check the
+quality and realism of the simulated products. We see that the dithered run has a high level of uniformity and points to the success of the dithering
+strategy. We can also see that the PSF is recovered correctly using the pipeline.
 
+This is the first of three different data challenges for LSST-DESC that will be increasing in complexity and size.
 % ----------------------------------------------------------------------
 
 \subsection*{Acknowledgments}
