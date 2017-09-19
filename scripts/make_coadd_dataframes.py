@@ -1,9 +1,16 @@
 """
 Convert Level 2 coadd catalogs to dask dataframes and write out to hdf.
 """
-from __future__ import print_function
+import sys
+import re
+import logging
 import pandas as pd
 import lsst.daf.persistence as dp
+
+logging.basicConfig(format="%(message)s", stream=sys.stdout)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+#logger.setLevel(logging.DEBUG)
 
 def make_dataframe(catalog):
     df = pd.DataFrame()
@@ -22,7 +29,10 @@ def get_patches(butler):
 
 dataset = 'DC1-imsim-dithered'
 
-key_prefix = lambda i: "%s-%05i" % (dataset, i)
+def key_prefix(patch, dataset=dataset):
+    r = re.compile('[,-]')
+    return r.sub('_', "%s_%s" % (dataset, patch))
+
 hdf_file = 'coadd-%s.hdf' % dataset
 repo = '/global/cscratch1/sd/descdm/DC1/rerun/%s' % dataset
 
@@ -32,17 +42,14 @@ patches = get_patches(butler)
 tract = 0
 band = 'r'
 
-i = -1
 for patch in patches[tract]:
     dataId = dict(patch=patch, tract=tract, filter=band)
     try:
         catalog = butler.get('deepCoadd_meas', dataId=dataId)
-        i += 1
+        logging.info("processing dataId: %s", dataId)
+        df = make_dataframe(catalog)
+        df.to_hdf(hdf_file, key_prefix(patch), format='table')
     except RuntimeError as eobj:
-        print("RuntimeError for patch %s:" % patch)
-        print(eobj)
-        print("skipping")
-        continue
-
-    df = make_dataframe(catalog)
-    df.to_hdf(hdf_file, key_prefix(i), format='table')
+        logger.debug("RuntimeError for patch %s:", patch)
+        logger.debug(eobj)
+        logger.debug("Skipping")
