@@ -1,6 +1,8 @@
+#!/usr/bin/env python
 """
 Convert Level 2 coadd catalogs to dask dataframes and write out to hdf.
 """
+import os
 import sys
 import re
 import logging
@@ -8,11 +10,6 @@ import numpy as np
 import pandas as pd
 import lsst.daf.persistence as dp
 import lsst.pex.exceptions as pexExcept
-
-logging.basicConfig(format="%(message)s", stream=sys.stdout)
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-#logger.setLevel(logging.DEBUG)
 
 def make_dataframe(catalog):
     """
@@ -58,31 +55,58 @@ def get_patches(butler):
         patches[tract.getId()] = ['%i,%i' % x.getIndex() for x in tract]
     return patches
 
-dataset = 'DC1-imsim-dithered'
-
-def key_prefix(patch, dataset=dataset):
+def key_prefix(dataset, patch, band):
     r = re.compile('[,-]')
-    return r.sub('_', "%s_%s" % (dataset, patch))
+    return r.sub('_', "%s_%s_%s" % (dataset, patch, band))
 
-hdf_file = 'coadd-%s.hdf' % dataset
-repo = '/global/cscratch1/sd/descdm/DC1/rerun/%s' % dataset
+def get_datasets(infile):
+    return np.loadtxt(infile, dtype=str)
 
-butler = dp.Butler(repo)
-patches = get_patches(butler)
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('repo_list', help='File with list of repos and bands.')
+    parser.add_argument('--log_level', default='INFO',
+                        choices='DEBUG INFO WARN ERROR CRITICAL'.split(),
+                        help='Logging level. Default: "INFO"')
+    parser.add_argument('--outdir', default='.', type=str,
+                        help='Output directory.')
+    parser.add_argument('--clobber', default=False, action='store_true',
+                        help='Flag to replace existing output files. Default: False.')
+    args = parser.parse_args()
 
-tract = 0
-band = 'r'
+    logging.basicConfig(format="%(message)s", stream=sys.stdout)
+    logger = logging.getLogger()
+    logger.setLevel(args.log_level)
 
-for patch in patches[tract]:
-    dataId = dict(patch=patch, tract=tract, filter=band)
-    try:
-        coadd = butler.get('deepCoadd', dataId=dataId)
-        catalog = butler.get('deepCoadd_meas', dataId=dataId)
-        logging.info("processing dataId: %s", dataId)
-        df = make_dataframe(catalog)
-        df = add_calibrated_mags(df, catalog, coadd)
-        df.to_hdf(hdf_file, key_prefix(patch), format='table')
-    except RuntimeError as eobj:
-        logger.debug("RuntimeError for patch %s:", patch)
-        logger.debug(eobj)
-        logger.debug("Skipping")
+    tract = 0
+    for repo, bands in get_datasets(args.repo_list):
+        if not os.path.isdir(repo):
+            raise RuntimeError("%s is not a valid repository", repo)
+
+        dataset = os.path.basename(repo)
+        logging.info('processing %s', dataset)
+
+        hdf_file = os.path.join(args.outdir, 'coadd-%s.hdf' % dataset)
+        if args.clobber and os.path.isfile(hdf_file):
+            os.remove(hdf_file)
+
+        butler = dp.Butler(repo)
+        patches = get_patches(butler)
+
+        for band in bands:
+            for patch in patches[tract]:
+                dataId = dict(patch=patch, tract=tract, filter=band)
+                try:
+                    coadd = butler.get('deepCoadd', dataId=dataId)
+                    catalog = butler.get('deepCoadd_meas', dataId=dataId)
+                    df = make_dataframe(catalog)
+                    df = add_calibrated_mags(df, catalog, coadd)
+                    df.to_hdf(hdf_file, key_prefix(dataset, patch, band),
+                              format='table')
+                    logger.info("processed dataId: %s", dataId)
+                except RuntimeError as eobj:
+                    logger.debug("RuntimeError for dataId %s:", dataId)
+                    logger.debug(eobj)
+                    logger.debug("Skipping")
+        logger.info('')
