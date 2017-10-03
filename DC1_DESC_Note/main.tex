@@ -34,7 +34,7 @@
 
 \begin{abstract}
 
-The success of future Stage IV dark energy surveys~\citep{2006astro.ph..9591A} relies in the ability to model and mitigate
+The success of future Stage IV dark energy surveys~\citep{2006astro.ph..9591A} relies on the ability to model and mitigate
 systematic uncertainties. Realistic simulation offer a unique opportunity to study systematic uncertainties and test the
 processing and analysis pipelines of ongoing and future experiments. Here we present a set of realistic simulations
 of $\sim 40$ sq.-deg. that try to mimic the depth and characteristics of LSST 10-years coadd images in the $r$-band.
@@ -62,11 +62,12 @@ and outputs. With the larger availability of computational resources this approa
 redshift galaxy surveys~\citep{2016MNRAS.457..786S,2016ApJ...817...25B} and a similar effort is undergoing in spectroscopic
 surveys such as DESI~\citep{2016arXiv161100036D}. For surveys like the LSST~\citep{2008arXiv0805.2366I} where the expected
 data volume is very large and where a highly stringent control of the systematic uncertainties is required, producing these
-kind of end-to-end simulations becomes necessary.
+kind of end-to-end simulations becomes necessary. With $\sim 50$ PB of raw data and $\sim 40$ billion objects~\citep{2008arXiv0805.2366I}
+the data handling by itself becomes challenging. 
 
 In this paper, we present the procedure to generate and process images that resemble the data that will be produced by
 LSST~\citep{2008arXiv0805.2366I} after 10 years of operation in $r$-band using state of the art tools. We also characterize
-the products of this process for future studies. These productsencompass single-visit and coadded calibrated exposures
+the products of this process for future studies. These products encompass single-visit and coadded calibrated exposures
 (i.e., flattened, background removed, etc) and source catalogs that add up to $\sim 225 TB$. They are the result of three
 different simulations: imSim dithered, imSim undithered, and PhoSim that will be introduced later.
 
@@ -77,27 +78,40 @@ calibration and source extraction on the simulated images. In \secref{catalogs} 
 produced by our pipelines. Finally, in \secref{conclusions} we present some concluding remarks.
 
 % ----------------------------------------------------------------------
-\section{Image generation: inputs}
+\section{Image generation: input catalog}
 \label{sec:inputs}
-
-\textcolor{red}{Describe CatSim inputs and dithering, say what kind of sources there are.}
+\textcolor{red}{Describe CatSim inputs say what kind of sources there are.}
+\begin{itemize}
+  \item Inputs from Millenium simulation
+  \item Information about shapes/SEDs/object types, etc
+  \item Description of the box replication strategy
+  \item Any other relevant information?
+\end{itemize}
+\section{Dithering strategy}
+\label{sec:dithering}
+\begin{itemize}
+    \item Motivate why we use different dithering strategies in simulations
+    \item Description of the dithering (Awan et. al)
+    \item Describe the way we took out sensors out of the region of interest
+\end{itemize}
 
 \section{Image generation: pipeline}
 \label{sec:image_generation_pipeline}
 % ---------------------------------------------------------------------
 
-The artificial generation of astronomical images is a very complex and computationally demanding process. In the recent
+The artificial generation of astronomical images is a complex and computationally demanding process. In the recent
 years there is a big effort in the community in order to create software that allows more realistic and fast image
 generation~\citep{2016MNRAS.457..786S,2016ApJ...817...25B}. In our case, we use two different approaches: In one approach
-we use modeling of the input sources using \textsc{GalSim}~\citep{2015A&C....10..121R}. The other approach consists in
-running a full photon-shooting simulation using \textsc{PhoSim}~\citep{2015ApJS..218...14P}. The former has a big speed
+we use modeling of the input sources using imSim which uses \textsc{GalSim}~\citep{2015A&C....10..121R} as a library driven
+by a LSST specific application. The other approach consists in
+running a full photon-shooting simulation using \textsc{PhoSim}~\citep{2015ApJS..218...14P}. The former has a speed
 advantage but the latter fully traces each photon coming from the sources through the atmosphere and the instrument,
 increasing the level of realism. These two approaches allow us to focus on different systematic effects and science cases.
 
-\subsection{The imSim pipeline}
+\subsection{imSim}
 \label{sec:imsim_pipeline}
 
-The imSim pipeline follows the path of the fast image simulations in refs.~\citep{2016MNRAS.457..786S,2016ApJ...817...25B}.
+imSim follows the path of the fast image simulations in refs.~\citep{2016MNRAS.457..786S,2016ApJ...817...25B}.
 imSim uses \textsc{GalSim}~\citep{2015A&C....10..121R} to generate images that resemble LSST individual visits. Instead of the
 planned two 15 seconds exposures planned~\citep{2008arXiv0805.2366I} we generate a single 30 seconds image to speed up the process.
 We simulate each CCD of the focal plane individually but there are no instrumental effects nor variability in the optical model
@@ -124,11 +138,11 @@ $XXXXX$ images in total. The typical time to simulate each CCD is $YYYY$ seconds
 
 % ----------------------------------------------------------------------
 
-\subsection{The PhoSim pipeline}
+\subsection{PhoSim}
 \label{sec:phosim_pipeline}
 
-The PhoSim pipeline is a complementary approach where we use the photon-shooting software \textsc{PhoSim} to create simulated images.
-\textcolor{red}{Describe PhoSim}
+PhoSim is a complementary approach where we use the photon-shooting software \textsc{PhoSim} to create simulated images.
+\textcolor{red}{Describe PhoSim. PhoSim inputs and differences with imSim. What are we adding?}
 % ----------------------------------------------------------------------
 
 \section{Image processing pipeline}
@@ -203,10 +217,9 @@ astrometry, photometry and PSF.
 \subsection{Astrometry checks}
 \label{sec:astrometry_checks}
 
-Biases on astrometry can potentially affect both clustering and weak lensing measurements. These biases
-can have different origins: PSF mis-characterization, not corrected sensor effects, presence of blended sources are among
-the most common scenarios for single-visit exposures. In the case of co-adds we should add to this list a different effect:
-incorrect modeling of proper motion for the measured objects.
+Biases in astrometry can potentially affect both clustering and weak lensing measurements. These biases
+can have different origins: PSF mis-characterization, non corrected sensor effects, incorrect modeling of proper
+motion for the measured objects and presence of blended sources are among the most common sources.
 
 We will follow two approaches to check the quality of the astrometric solutions that we obtained: an \textit{external} check
 comparing to the input \textit{truth} catalog; and an \textit{internal} check comparing different visits.
@@ -234,8 +247,7 @@ run. This effect is also present in the dithered and undithered imSim runs and i
 mean astrometric residual with the magnitude of the objects as shown in \figref{astrometry_b} where a mild bias for the brightest
 objects can be seen. This bias is smaller than 15 mas, much smaller than the resolution of the input N-body simulation. This means
 that the two point clustering statistics will not be affected by this bias.
-\textcolor{red}{Check origin of these biases: Some pepole suggest proper motion: Why then
-present in single visits? I think it's the way we simulate the saturation (see the trend with magnitude).}
+\textcolor{red}{Check origin of these biases}
 
 \begin{figure}
   \centering
@@ -278,7 +290,7 @@ residuals do not show any noticeable structure and appear to be mostly random.
 \label{sec:internal_astrometry}
 
 Another important test is to ensure the internal consistency of the astrometric solutions between different exposures. To do that we selected
-a small region of the co-added area, which we will refer to as \textit{patch} and compared the positions of the objects detected in the co-add
+a small region of the co-added area (\textit{patch}) and compared the positions of the objects detected in the co-add
 image with the positions of objects detected in individual exposures that overlap with that patch.
 
 In particular, we randomly chose 10 catalogs from individual exposures and looked for objects that fulfilled the following criteria:
@@ -370,7 +382,7 @@ to the input model given the observing conditions and compute the residual.
 \label{sec:conclusions}
 
 In this paper we presented the methodology followed to produce simulated images that try to resemble LSST 10-year exposures. We use two different
-approaches, one based on modeling using \textsc{GalSim} and one based on photon shooting using \textsc{PhoSim}. These two approaches are complementary
+approaches, one based on modeling using imSim and one based on photon shooting using \textsc{PhoSim}. These two approaches are complementary
 since they include different effects and also they allow us to cross-check our simulations. These images are key to investigate
 the impact of systematic uncertainties in different science probes using LSST images. These images also allow us to test the image reduction and
 prepare and test analysis software. This effort represents a fundamental step towards the success of LSST. We performed several tests to check the
