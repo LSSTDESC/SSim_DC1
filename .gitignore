@@ -157,3 +157,6 @@ pythontex-files-*/
 
 # Latexian
 TSWLatexianTemp*
+
+# IPython Notebooks
+*.ipynb_checkpoints*
