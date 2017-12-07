@@ -12,9 +12,8 @@ While we've done our best to validate that these notebooks work on a single syst
 
 ## Description
 
-* Dask
-** [DC1_Dask_Access.ipynb](./Dask/DC1_Dask_Access.ipynb) - Introduction to indirect data access from HDF5 files using Dask.
-** [DC1_Dask_Validation.ipynb](./Dask/DC1_Dask_Validation.ipynb) - Some data validation examples using the Dask access interface.
+* [Dask/DC1_Dask_Access.ipynb](./Dask/DC1_Dask_Access.ipynb) - Introduction to indirect data access from HDF5 files using Dask.
+* [Dask/DC1_Dask_Validation.ipynb](./Dask/DC1_Dask_Validation.ipynb) - Some data validation examples using the Dask access interface.
 * [DC1_Butler_Access.ipynb](./DC1_Butler_Access.ipynb) - Introduction to direct Butler access.
 * [DESC-SSim_Flags.ipynb](./DESC-SSim_Flags.ipynb) - "Best practices" for selecting objects using flags
 * [DESC-SSim_Patch_Geometry.ipynb](./DESC-SSim_Patch_Geometry.ipynb) - Survey geometry plotting examples using SkyMap
