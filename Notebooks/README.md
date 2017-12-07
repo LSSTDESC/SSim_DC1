@@ -10,7 +10,7 @@ The ["Dask" subdirectory](./Dask) contains examples of how to use [Dask](https:/
 
 While we've done our best to validate that these notebooks work on a single system (NERSC) at a specific point in time (December 2017), they may not "just work" for you without modification. They are written by various group members and downloaded from SSim meeting presentations. For this reason, you may sometimes have to modify the expected input file locations or obtain the needed input files etc.  However, the information in these files will give you the background you need to write your own analysis and validation programs. Several of the oldest and most obsolete notebooks have been archived in the ["Deprecated" subdirectory](./Deprecated).
 
-## Description
+## Content Index
 
 * [Dask/DC1_Dask_Access.ipynb](./Dask/DC1_Dask_Access.ipynb) - Introduction to indirect data access from HDF5 files using Dask.
 * [Dask/DC1_Dask_Validation.ipynb](./Dask/DC1_Dask_Validation.ipynb) - Some data validation examples using the Dask access interface.
