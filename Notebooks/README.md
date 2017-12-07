@@ -18,4 +18,4 @@ While we've done our best to validate that these notebooks work on a single syst
 * [DC1_Butler_Access.ipynb](./DC1_Butler_Access.ipynb) - Introduction to direct Butler access.
 * [DESC-SSim_Flags.ipynb](./DESC-SSim_Flags.ipynb) - "Best practices" for selecting objects using flags
 * [DESC-SSim_Patch_Geometry.ipynb](./DESC-SSim_Patch_Geometry.ipynb) - Survey geometry plotting examples using SkyMap
-* [PSF_test.ipynb](./PSF_test.ipynb) - Some simple PSF testing examples.
+* [DC1_PSF_Test.ipynb](./DC1_PSF_Test.ipynb) - Some simple PSF testing examples.
