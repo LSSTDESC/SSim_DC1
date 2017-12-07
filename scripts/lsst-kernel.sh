@@ -9,6 +9,6 @@
 INST_DIR=/global/common/software/lsst/cori-haswell-gcc/stack/
 source $INST_DIR/setup_w_2017_46_py3_gcc6.sh
 setup lsst_sims
-setup afw
+setup lsst_apps
 
 exec python -m ipykernel $@
